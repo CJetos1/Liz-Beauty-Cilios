@@ -22,7 +22,7 @@
             --glass-blur: blur(16px); 
             --glass-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
 
-            /* SVG Flores Douradas (Usado no fundo e na intro) */
+            /* SVG Flores Douradas */
             --flower-sketch: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cpath fill='none' stroke='%23D4AF37' stroke-width='1.5' stroke-miterlimit='10' d='M195.8,4.2c-23.3,1.4-46.7,6.5-68.4,17.3C103,33.7,78,52.3,57.6,75.1c-20.4,22.8-36.5,49.3-47.8,77.7C4.8,167.6,1.5,183.6,1.5,198.5'/%3E%3Cpath fill='none' stroke='%23D4AF37' stroke-width='1.5' stroke-miterlimit='10' d='M127.4,21.5c-1.2,12.9,1.4,26.6,8.8,37.6c7.4,10.9,19.7,18.5,32.4,21.7'/%3E%3Cpath fill='none' stroke='%23D4AF37' stroke-width='1.5' stroke-miterlimit='10' d='M83.4,64.5c-8.5,16.8-11.9,37-6.6,55.1c5.3,18.1,20.3,32.6,37.8,39.6'/%3E%3Cpath fill='none' stroke='%23D4AF37' stroke-width='1.5' stroke-miterlimit='10' d='M28.8,123.5c-6,16.1-4.9,35.4,5.3,49.8c10.2,14.3,28.2,22.3,45.7,21.5'/%3E%3Cpath fill='none' stroke='%23D4AF37' stroke-width='1.5' stroke-miterlimit='10' d='M160,10 c10,10 20,30 15,50'/%3E%3C/svg%3E");
         }
 
@@ -30,8 +30,8 @@
 
         body {
             font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #e085ff 0%, #7b1fa2 100%);
-            background-attachment: fixed;
+            /* Cor de fundo sólida de segurança para iPhone */
+            background-color: #9c27b0; 
             color: var(--branco);
             min-height: 100vh;
             padding-bottom: calc(80px + env(safe-area-inset-bottom));
@@ -39,38 +39,56 @@
             position: relative;
         }
 
-        /* --- 2. TELA DE INTRODUÇÃO (COM DETALHES DOURADOS) --- */
+        /* --- CORREÇÃO PARA IPHONE: CAMADA DE FUNDO FIXA --- */
+        /* Isso substitui o background-attachment: fixed que dá erro no iOS */
+        #fixed-background-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #e085ff 0%, #7b1fa2 100%);
+            z-index: -10; /* Fica bem atrás de tudo */
+        }
+
+        /* --- DECORAÇÕES (FLORES) --- */
+        .decorations { 
+            position: fixed; 
+            top: 0; left: 0; 
+            width: 100%; height: 100%; 
+            pointer-events: none; 
+            z-index: -5; /* Fica na frente do fundo roxo, mas atrás do conteúdo */
+            overflow: hidden; 
+        }
+        .decorations::before {
+            content: ''; position: absolute; top: -40px; left: -40px; width: 50vw; height: 50vw;
+            background-image: var(--flower-sketch); background-repeat: no-repeat; background-size: contain;
+            opacity: 0.3; transform: rotate(-20deg);
+        }
+        .decorations::after {
+            content: ''; position: absolute; bottom: -40px; right: -40px; width: 60vw; height: 60vw;
+            background-image: var(--flower-sketch); background-repeat: no-repeat; background-size: contain;
+            opacity: 0.25; transform: rotate(160deg);
+        }
+
+        /* --- INTRO SCREEN --- */
         #intro-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: linear-gradient(135deg, #e085ff 0%, #5e137c 100%);
             z-index: 9999; display: flex; justify-content: center; align-items: center; flex-direction: column;
             transition: opacity 1s ease-in-out, visibility 1s;
-            overflow: hidden; /* Para cortar os detalhes que passarem da tela */
+            overflow: hidden;
         }
 
-        /* Adicionando as flores douradas no fundo da intro */
+        /* Flores Douradas na Intro */
         #intro-overlay::before, #intro-overlay::after {
-            content: '';
-            position: absolute;
-            width: 80vw; height: 80vw; /* Tamanho grande relativo à tela */
-            background-image: var(--flower-sketch);
-            background-repeat: no-repeat;
-            background-size: contain;
-            opacity: 0.15; /* Bem sutil */
-            z-index: -1; /* Atrás do logo */
+            content: ''; position: absolute; width: 80vw; height: 80vw;
+            background-image: var(--flower-sketch); background-repeat: no-repeat; background-size: contain;
+            opacity: 0.15; z-index: -1;
         }
-        #intro-overlay::before {
-            top: -20%; left: -20%;
-            transform: rotate(-10deg);
-            animation: pulseIntroBg 4s ease-in-out infinite;
-        }
-        #intro-overlay::after {
-            bottom: -20%; right: -20%;
-            transform: rotate(170deg);
-            animation: pulseIntroBg 4s ease-in-out infinite reverse;
-        }
+        #intro-overlay::before { top: -20%; left: -20%; transform: rotate(-10deg); animation: pulseIntroBg 4s ease-in-out infinite; }
+        #intro-overlay::after { bottom: -20%; right: -20%; transform: rotate(170deg); animation: pulseIntroBg 4s ease-in-out infinite reverse; }
 
-        /* Animação sutil para o fundo da intro */
         @keyframes pulseIntroBg {
             0%, 100% { opacity: 0.15; transform: scale(1) rotate(var(--rot)); }
             50% { opacity: 0.25; transform: scale(1.05) rotate(var(--rot)); }
@@ -97,20 +115,7 @@
         .site-content { opacity: 0; transform: translateY(30px); transition: opacity 1s ease, transform 1s ease; }
         .site-visible { opacity: 1; transform: translateY(0); }
 
-        /* --- 3. DECORAÇÕES DO SITE PRINCIPAL --- */
-        .decorations { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: -1; overflow: hidden; }
-        .decorations::before {
-            content: ''; position: absolute; top: -40px; left: -40px; width: 50vw; height: 50vw;
-            background-image: var(--flower-sketch); background-repeat: no-repeat; background-size: contain;
-            opacity: 0.3; transform: rotate(-20deg);
-        }
-        .decorations::after {
-            content: ''; position: absolute; bottom: -40px; right: -40px; width: 60vw; height: 60vw;
-            background-image: var(--flower-sketch); background-repeat: no-repeat; background-size: contain;
-            opacity: 0.25; transform: rotate(160deg);
-        }
-
-        /* --- 4. CABEÇALHO --- */
+        /* --- CABEÇALHO --- */
         header { text-align: center; padding: 20px 20px 10px; position: relative; z-index: 2; }
         .logo-img { 
             max-width: 260px; width: 85%; height: auto; 
@@ -119,13 +124,16 @@
             mix-blend-mode: normal; 
         }
 
-        /* --- 5. CONTAINER --- */
+        /* --- CONTAINER --- */
         .container { width: 90%; max-width: 450px; margin: 0 auto; position: relative; z-index: 2; }
 
-        /* --- 6. CARDS --- */
+        /* --- CARDS --- */
         .card {
-            background: var(--glass-bg); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
-            border: var(--glass-border-gold); box-shadow: var(--glass-shadow);
+            background: var(--glass-bg); 
+            backdrop-filter: var(--glass-blur); 
+            -webkit-backdrop-filter: var(--glass-blur); /* Essencial para iPhone */
+            border: var(--glass-border-gold); 
+            box-shadow: var(--glass-shadow);
             border-radius: 20px; padding: 20px; margin-bottom: 20px; position: relative; overflow: hidden;
         }
         .card::before {
@@ -143,7 +151,7 @@
         }
         .price { font-size: 1.5rem; font-weight: 600; color: var(--dourado); font-family: 'Playfair Display', serif; }
 
-        /* --- 7. BOTÕES --- */
+        /* --- BOTÕES --- */
         .btn {
             background: var(--dourado-brilho); border: none; border-radius: 50px; color: #4a1458; 
             font-weight: 700; text-transform: uppercase; font-size: 0.8rem; cursor: pointer; 
@@ -152,7 +160,7 @@
         }
         .btn:active { transform: scale(0.96); }
 
-        /* --- 8. SOCIAL GRID --- */
+        /* --- SOCIAL GRID --- */
         .social-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
         .social-btn {
             width: 100%; font-size: 0.85rem; background: rgba(255, 255, 255, 0.1); 
@@ -164,7 +172,7 @@
         }
         .social-btn.whats i { color: #25D366; font-size: 1.2rem; }
 
-        /* --- 9. MODAL --- */
+        /* --- MODAL --- */
         .modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(40, 10, 55, 0.8); backdrop-filter: blur(5px);
@@ -193,13 +201,11 @@
             border-color: #666; color: #888; cursor: not-allowed; opacity: 0.6;
         }
         
-        /* Aviso de Manutenção */
         .warning-text {
             font-size: 0.75rem; color: #ff6b6b; font-weight: bold; margin-bottom: 5px; margin-top: 15px;
             background: rgba(0,0,0,0.3); padding: 5px; border-radius: 5px; display: inline-block;
         }
         
-        /* Area Pix Manual */
         .pix-area { display: none; flex-direction: column; gap: 10px; animation: fadeIn 0.3s; }
         @keyframes fadeIn { from {opacity:0} to {opacity:1}}
         .pix-key-box {
@@ -214,7 +220,7 @@
         .btn-whats { background: #25D366; color: #fff; }
         .btn-back { background: transparent; color: #aaa; margin-top: 10px; border: 1px solid #aaa; }
 
-        /* --- 10. RODAPÉ --- */
+        /* --- RODAPÉ --- */
         footer {
             text-align: center; color: rgba(255,255,255,0.6); font-size: 0.75rem; 
             margin-top: 40px; position: relative; padding-top: 20px; z-index: 2;
@@ -231,6 +237,8 @@
     </style>
 </head>
 <body>
+
+    <div id="fixed-background-layer"></div>
 
     <div id="intro-overlay">
         <img src="logo.png.jpeg" alt="Carregando..." class="intro-logo-anim">
@@ -309,7 +317,7 @@
         </div>
 
         <footer>
-            <p>© 2025 Liz Beauty Cílios.<br>Design Exclusivo CJetos.</p>
+            <p>© 2024 Liz Beauty Cílios.<br>Design Exclusivo Mobile.</p>
         </footer>
     </div>
 
